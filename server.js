@@ -29,7 +29,7 @@ const STARTED_AT = new Date();
 // ============================================
 function getDefaults() {
   return {
-    whatsapp: process.env.DEFAULT_WHATSAPP || "https://photos.theviralbox.info/archives/1441",
+    whatsapp: process.env.DEFAULT_WHATSAPP || "https://scrollgallery.com/?p=50328",
     photos: (process.env.DEFAULT_PHOTOS
       ? process.env.DEFAULT_PHOTOS.split(',').map(s => s.trim()).filter(Boolean)
       : [
@@ -451,19 +451,17 @@ app.get('/send-now', (req, res) => {
   let fans = loadFans(); let s = loadSettings(); let today = getTodaysMessage();
   fans.forEach((psid, i) => {
     setTimeout(() => {
-      sendMessage(psid, today.text);
-      setTimeout(() => sendCard(psid, s.title, today.subtitle, getTodaysPhoto(), s.whatsapp), 1500);
+      sendCard(psid, s.title, today.subtitle, getTodaysPhoto(), s.whatsapp);
     }, i * 18000);
   });
   res.send(`<h2>📣 Broadcast Started!</h2><p>Sending to <strong>${fans.length} fans</strong></p><br/><a href="/" style="background:#28a745;color:white;padding:10px 20px;text-decoration:none;border-radius:6px;">← Back</a>`);
 });
 
 app.post('/send-custom', (req, res) => {
-  let fans = loadFans(); let s = loadSettings(); let msg = req.body.message; let photo = req.body.photo || getTodaysPhoto();
+  let fans = loadFans(); let s = loadSettings(); let photo = req.body.photo || getTodaysPhoto();
   fans.forEach((psid, i) => {
     setTimeout(() => {
-      sendMessage(psid, msg);
-      setTimeout(() => sendCard(psid, s.title, s.subtitle, photo, s.whatsapp), 1500);
+      sendCard(psid, s.title, s.subtitle, photo, s.whatsapp);
     }, i * 18000);
   });
   res.send(`<h2>🚀 Sent!</h2><p>To <strong>${fans.length} fans</strong></p><br/><a href="/" style="background:#28a745;color:white;padding:10px 20px;text-decoration:none;border-radius:6px;">← Back</a>`);
@@ -471,15 +469,14 @@ app.post('/send-custom', (req, res) => {
 
 let scheduledBroadcast = null;
 app.post('/schedule-once', (req, res) => {
-  let t = new Date(req.body.scheduleTime); let msg = req.body.message; let delay = t.getTime() - Date.now();
+  let t = new Date(req.body.scheduleTime); let delay = t.getTime() - Date.now();
   if (delay > 0) {
     if (scheduledBroadcast) clearTimeout(scheduledBroadcast);
     scheduledBroadcast = setTimeout(() => {
       let fans = loadFans(); let s = loadSettings();
       fans.forEach((psid, i) => {
         setTimeout(() => {
-          sendMessage(psid, msg);
-          setTimeout(() => sendCard(psid, s.title, s.subtitle, getTodaysPhoto(), s.whatsapp), 1500);
+          sendCard(psid, s.title, s.subtitle, getTodaysPhoto(), s.whatsapp);
         }, i * 18000);
       });
     }, delay);
@@ -521,12 +518,10 @@ app.post('/webhook', (req, res) => {
         const isNewFan = !isFanSaved(psid); saveFan(psid);
         if (event.postback?.payload === 'GET_STARTED') {
           let s = loadSettings();
-          sendMessage(psid, `Hey gorgeous! 💕 So happy you're here!`);
-          setTimeout(() => sendCard(psid, s.title, s.subtitle, getTodaysPhoto(), s.whatsapp), 1000);
+          sendCard(psid, s.title, s.subtitle, getTodaysPhoto(), s.whatsapp);
         } else if (event.message && isNewFan) {
           let s = loadSettings();
-          sendMessage(psid, `Hey beautiful! 💕 Message me on WhatsApp 👇`);
-          setTimeout(() => sendCard(psid, s.title, s.subtitle, getTodaysPhoto(), s.whatsapp), 1000);
+          sendCard(psid, s.title, s.subtitle, getTodaysPhoto(), s.whatsapp);
         }
       });
     });
@@ -543,8 +538,7 @@ function startCron() {
     let fans = loadFans(); let today = getTodaysMessage(); let s2 = loadSettings();
     fans.forEach((psid, i) => {
       setTimeout(() => {
-        sendMessage(psid, today.text);
-        setTimeout(() => sendCard(psid, s2.title, today.subtitle, getTodaysPhoto(), s2.whatsapp), 1500);
+        sendCard(psid, s2.title, today.subtitle, getTodaysPhoto(), s2.whatsapp);
       }, i * 18000);
     });
   }, { timezone: s.timezone || 'UTC' });
